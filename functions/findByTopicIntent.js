@@ -47,9 +47,9 @@ module.exports = {
     const course = conv.data.courses[option];
     
     if (course) {
-      conv.ask("You selected for course: " + course.title + ". ");
+      conv.ask("You selected for course: " + course.title + ". Do you want to enroll this course? ");
       conv.ask(new BasicCard(convertCourseToBasicCard(course)));
-      conv.ask(new Suggestions(['Enrol this course'],['Find other course']));
+      conv.ask(new Suggestions(['Yes'],['No']));
       conv.contexts.set(context.FIND_BY_TOPIC_FOLLOWUP, 3, {
         option,
       });
@@ -68,11 +68,11 @@ module.exports = {
       return enrol(course.courseId, token).then(res => {
         conv.ask(new SimpleResponse('Yeah! You already enrol for course ' + course.title));
 
-        conv.ask(new Suggestions(['Give feedback', 'Find other courses']));
         conv.ask(new LinkOutSuggestion({
           name: 'Link to course',
           url: makeLinkToCourseInProgress(course.courseId),
         }));
+        conv.ask(new Suggestions(['Give feedback']));        
       })
       .catch(e => {
         console.log(e);
@@ -119,7 +119,7 @@ function getExplore(topics) {
       // "sort[0][direction]": "desc",
       offset: 0,
       'provider[]': 6692083,
-      // status: false,
+      status: false,
       // portal,
     }
   });
