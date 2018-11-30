@@ -1,12 +1,17 @@
-const { post } = require('./api');
-const { portal } = require('./auth');
-const buildUrl = require('build-url');
+
+const { baseUrl } = require('./auth');
+const { api } = require('./api');
 
 module.exports = {
-    enrol: (courseId) => {
-        const url = buildUrl('', {
-            path: 'enrolment-service/' + portal + '/0/' + courseId + '/enrolment',
-        });
-        return post(url);
+    enrol: (courseId, userId) => {
+        const url = baseUrl + '/v2/enrollments';
+        const data = {
+            lo_id: courseId,
+            parent_lo_id: 0,
+            parent_enrollment_id: 0,
+            user_id: userId,
+        };
+
+        return api.post(url, data);
     },
 };
