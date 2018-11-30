@@ -21,7 +21,7 @@ const { helpIntent } = require('./helpIntent');
 const {dialogflow, SignIn, Suggestions} = require('actions-on-google');
 const functions = require('firebase-functions');
 const app = dialogflow({
-  debug: false,
+  debug: true,
   // clientId: '58b41d735b8960abaed7c41c2267f2d26b7602c3',
 });
 

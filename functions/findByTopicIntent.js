@@ -11,7 +11,7 @@ const {
 const { Card, Suggestion } = require("dialogflow-fulfillment");
 
 const buildUrl = require("build-url");
-const { api } = require("./api");
+const { api, setJWT } = require("./api");
 const { convertCourseToBasicCard } = require('./findByCourseIntent');
 const { enrol } = require('./enrolment');
 const { portalUrl, portal } = require('./auth');
@@ -60,18 +60,22 @@ module.exports = {
 
   findByTopicEnroll: (conv, params, option) => {
     const course = conv.data.courses[conv.contexts.input[context.FIND_BY_TOPIC_FOLLOWUP].parameters.option];
-    console.log('find by topic enroll', JSON.stringify(course));
+    const { token } = conv.user.access;
+    
+    setJWT(token);
+
     if (course) {
-      return enrol(course.courseId).then(res => {
+      return enrol(course.courseId, token).then(res => {
         conv.ask(new SimpleResponse('Yeah! You already enrol for course ' + course.title));
 
-        conv.ask(new Suggestions['Give feedback', 'Find other courses']);
+        conv.ask(new Suggestions(['Give feedback', 'Find other courses']));
         conv.ask(new LinkOutSuggestion({
           name: 'Link to course',
           url: makeLinkToCourseInProgress(course.courseId),
         }));
       })
       .catch(e => {
+        console.log(e);
         conv.ask('Weird, error when enroll this course for you. Please try again or find some new course.');  
       });
     } else {
