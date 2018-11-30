@@ -22,14 +22,13 @@ const {dialogflow, SignIn, Suggestions} = require('actions-on-google');
 const functions = require('firebase-functions');
 const app = dialogflow({
   debug: true,
-  // clientId: '58b41d735b8960abaed7c41c2267f2d26b7602c3',
 });
 
-const jwt = require('jsonwebtoken');
+// const jwt = require('jsonwebtoken');
 const { api, setJWT } = require('./api');
 
 app.intent('Default Welcome Intent', (conv) => {
-  conv.ask(`Hi! I'm Go1 Assistant`);
+  // conv.ask(`Hi! I'm Go1 Assistant`);
 
   // Open signup dialog
   conv.ask(new SignIn('To get your account details'));
@@ -38,15 +37,17 @@ app.intent('Default Welcome Intent', (conv) => {
 app.intent('Get Signin', async (conv, params, signin) => {
   if (signin.status === 'OK') {
     const { token } = conv.user.access;
-    const payload = jwt.decode(token);
+    // const payload = jwt.decode(token);
 
     setJWT(token);
+    const { data: portal } = await api.get('/v2/account');
 
-    conv.ask(`I got your portal, ${payload.sub}. What do you want to do next?`);
-    conv.ask(new Suggestions('Tell me about Big Data'));
+    conv.data.portal = portal;
 
+    conv.ask(`What can I do for you?`);
+    conv.ask(new Suggestions(['Tell me about Big Data', 'Find AI course']));
   } else {
-    conv.ask(`I won't be able to save your data, but what do you want to do next?`)
+    conv.ask(`Sorry! I couldn't get your data. Please try again`);
   }
 });
 
@@ -61,9 +62,5 @@ app.intent('find_by_topic_enroll', findByTopicEnroll);
 app.intent('find_my_course', findByCourseIntent);
 
 app.intent('Help', helpIntent);
-
-app.intent('Goodbye', conv => {
-  conv.close('See you in the next learning!')
-});
 
 exports.go1 = functions.https.onRequest(app);
