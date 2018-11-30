@@ -7,14 +7,13 @@ const {
   BasicCard,
   LinkOutSuggestion,
 } = require("actions-on-google");
-
-const { Card, Suggestion } = require("dialogflow-fulfillment");
-
 const buildUrl = require("build-url");
+const stripHtml = require("string-strip-html");
+
 const { api, setJWT } = require("./api");
 const { convertCourseToBasicCard } = require('./findByCourseIntent');
 const { enrol } = require('./enrolment');
-const { portalUrl, portal } = require('./auth');
+const { getAccount } = require('./user');
 
 const context = {
   FIND_BY_TOPIC_FOLLOWUP: 'find_by_topic-followup',
@@ -67,15 +66,16 @@ module.exports = {
     if (course) {
       return enrol(course.courseId, token).then(res => {
         conv.ask(new SimpleResponse('Yeah! You already enrol for course ' + course.title));
-
-        conv.ask(new LinkOutSuggestion({
-          name: 'Link to course',
-          url: makeLinkToCourseInProgress(course.courseId),
-        }));
-        conv.ask(new Suggestions(['Give feedback']));        
+        conv.ask(new Suggestions(['Give feedback']));
+        return getAccount().then(res => {
+          const account = res.data;
+          conv.ask(new LinkOutSuggestion({
+            name: 'Link to course',
+            url: makeLinkToCourseInProgress(course.courseId, account.url, account.id),
+          }));
+        });     
       })
       .catch(e => {
-        console.log(e);
         conv.ask('Weird, error when enroll this course for you. Please try again or find some new course.');  
       });
     } else {
@@ -91,7 +91,7 @@ function convertHitsToList(hits) {
     listItems[KEYS[index]] = {
       courseId: item.id,
       title: item.title || 'No title ' + index,
-      description: item.description,
+      description: stripHtml(item.description),
       image: new Image({
         url: item.image,
         alt: item.title || 'No alt',
@@ -102,9 +102,9 @@ function convertHitsToList(hits) {
   return listItems;
 }
 
-function makeLinkToCourseInProgress(courseId) {  
+function makeLinkToCourseInProgress(courseId, portalUrl, portal) {
   // https://wonderminds.mygo1.com/p/#/app/course/6701786/progress?instance=6692083
-  return `${portalUrl}/app/course/${courseId}/progress?instance=${portal}`;
+  return `https://${portalUrl}/p/#/app/course/${courseId}/progress?instance=${portal}`;
 }
 
 function getExplore(topics) {
@@ -119,8 +119,6 @@ function getExplore(topics) {
       // "sort[0][direction]": "desc",
       offset: 0,
       'provider[]': 6692083,
-      status: false,
-      // portal,
     }
   });
 
@@ -134,7 +132,7 @@ function convertHitsToBasicCard(course) {
       url: course.image,
       alt: course.title,
     }),
-    text: course.description,
+    text: stripHtml(course.description),
   }
 }
 
@@ -142,7 +140,7 @@ function convertHitsDataToCourse(hits) {
   return {
     courseId: hits.id,
     title: hits.title,
-    description: hits.description,
+    description: stripHtml(hits.description),
     image: {
       url: hits.image,
     }
