@@ -46,10 +46,10 @@ module.exports = {
 
   findByTopicSelected: (conv, params, option) => {
     const course = conv.data.courses[option];
-
+    const portal = conv.data.portal;
     if (course) {
       conv.ask("Here's some information about the course" + course.title + ". Do you want to enroll?");
-      conv.ask(new BasicCard(convertCourseToBasicCard(course)));
+      conv.ask(new BasicCard(convertCourseToBasicCard(course, portal)));
       conv.ask(new Suggestions(['Yes'], ['No']));
       conv.contexts.set(context.FIND_BY_TOPIC_FOLLOWUP, 3, {
         option,

@@ -18,7 +18,7 @@ module.exports = {
     }));
   },
 
-  convertCourseToBasicCard: (course) => {
+  convertCourseToBasicCard: (course, portal) => {
     return {
       title: course.title,
       image: new Image({
@@ -26,6 +26,10 @@ module.exports = {
         alt: course.title,
       }),
       text: course.description,
+      buttons: new Button({
+        title: 'Enroll now',
+        url: `https://${portal.url}/p/#/app/course/${course.courseId}/progress?instance=${portal.id}`,
+      }),
     }
   }
 }
