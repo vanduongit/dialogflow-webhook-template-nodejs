@@ -31,6 +31,8 @@ module.exports = {
 
     return getExplore(topics).then(res => {
       responseListCourse(topics, res, conv);
+    }).catch(e => {
+      conv.ask(new SimpleResponse('Oops! Something wrong. Please try again. ' + e.message));
     });
   },
 
@@ -46,7 +48,7 @@ module.exports = {
     const course = conv.data.courses[option];
     
     if (course) {
-      conv.ask("You selected for course: " + course.title + ". Do you want to enroll this course? ");
+      conv.ask("Here's some information about the course" + course.title + ". Do you want to enroll? ");
       conv.ask(new BasicCard(convertCourseToBasicCard(course)));
       conv.ask(new Suggestions(['Yes'],['No']));
       conv.contexts.set(context.FIND_BY_TOPIC_FOLLOWUP, 3, {
@@ -65,7 +67,7 @@ module.exports = {
 
     if (course) {
       return enrol(course.courseId, token).then(res => {
-        conv.ask(new SimpleResponse('Yeah! You already enrol for course ' + course.title));
+        conv.ask(new SimpleResponse('Well done! You have already enrolled the course.'));
         conv.ask(new Suggestions(['Give feedback']));
         return getAccount().then(res => {
           const account = res.data;
@@ -151,10 +153,7 @@ function responseListCourse(topics, res, conv){
   const items = convertHitsToList(res.data.hits);
   if (res.data.hits.length >= 2) {
     conv.ask(
-      new SimpleResponse({
-        speech: "<speak>This some course about " + topics + "</speak>",
-        textToSpeech: "Yeah!. This some course about " + topics
-      })
+      new SimpleResponse('Sure, here are a few thing you can learn. Which one sounds interesting ?')
     );
     conv.data.courses = items;
     conv.ask(
@@ -164,10 +163,7 @@ function responseListCourse(topics, res, conv){
     );
   } else if ( res.data.hits.length == 1) {
     conv.ask(
-      new SimpleResponse({
-        speech: "<speak>This a course about " + topics + "</speak>",
-        textToSpeech: "Yeah!. This a course about " + topics,
-      })          
+      new SimpleResponse('Sure, here are a few thing you can learn. Which one sounds interesting ?')
     );
     const course = convertHitsDataToCourse(res.data.hits[0]);
     conv.data.courses = {};
