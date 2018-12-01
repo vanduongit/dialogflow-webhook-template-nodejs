@@ -1,5 +1,4 @@
-const { baseUrl } = require("./auth");
-const { api } = require("./api");
+const { api, setJWT } = require("./api");
 const { validateUser } = require("./user");
 
 module.exports = {
@@ -14,7 +13,7 @@ module.exports = {
         parent_enrollment_id: 0,
         user_id: userId
       };
-      
+
       return api.post(url, data);
     });
   }
