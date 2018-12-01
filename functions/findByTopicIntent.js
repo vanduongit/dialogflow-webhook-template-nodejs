@@ -70,7 +70,7 @@ module.exports = {
         return getAccount().then(res => {
           const account = res.data;
           conv.ask(new LinkOutSuggestion({
-            name: 'Link to course',
+            name: 'Open the course',
             url: makeLinkToCourseInProgress(course.courseId, account.url, account.id),
           }));
         });     
