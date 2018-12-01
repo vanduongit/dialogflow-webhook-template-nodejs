@@ -38,8 +38,22 @@ module.exports = {
 
     setJWT(token);
 
-    conv.ask("Ok, load more " + topics);
-    return getExplore(topics, conv.data.portal.id).then(res => {
+    const url = buildUrl("", {
+      path: "/v2/learning-objects",
+      queryParams: {
+        // admin: 1,
+        // "type[]": "course",
+        limit: 4,
+        // "keyword[all]": topics,
+        // "sort[0][field]": "relevant",
+        // "sort[0][direction]": "desc",
+        offset: 4,
+        'provider[]': conv.data.portal.id,
+      }
+    });
+
+    conv.ask("Ok, more " + topics);
+    return api.get(url).then(res => {
       responseListCourse(topics, res, conv);
     });
   },
@@ -161,6 +175,7 @@ function responseListCourse(topics, res, conv){
         items
       })
     );
+    conv.ask(new Suggestions('Find other course'));
   } else if (res.data.hits.length == 1) {
     conv.ask(
       new SimpleResponse('Sure, here are a few thing you can learn. Which one sounds interesting ?')
@@ -169,7 +184,7 @@ function responseListCourse(topics, res, conv){
     conv.data.courses = {};
     conv.data.courses[course.courseId] = course;
     conv.ask(new BasicCard(convertHitsToBasicCard(res.data.hits[0])));
-    conv.ask(new Suggestions(['Enrol this course'], ['Find other course']));
+    conv.ask(new Suggestions('Enrol this course', 'Find other course'));
     conv.contexts.set(context.FIND_BY_TOPIC_FOLLOWUP, 2, {
       option: course.courseId,
     });
